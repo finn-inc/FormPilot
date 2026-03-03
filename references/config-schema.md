@@ -1,0 +1,226 @@
+# form-submit 設定ファイル スキーマリファレンス
+
+`~/.claude/form-submit/config.json` の設定スキーマと設定例を説明するリファレンスドキュメント。
+
+---
+
+## 設定ファイルの全体構造
+
+```json
+{
+  "spreadsheet": {
+    "url": "(Google SpreadsheetのURL)",
+    "columns": {
+      "companyName": "A",
+      "submitted": "B",
+      "formUrl": "C"
+    },
+    "sheet": "シート1"
+  },
+  "commonData": {
+    "会社名": "...",
+    "氏名": "...",
+    "フリガナ": "...",
+    "メールアドレス": "...",
+    "電話番号": "...",
+    "お問い合わせ内容": "...",
+    "お問い合わせ種別": "..."
+  },
+  "options": {
+    "confirmBeforeSubmit": false,
+    "screenshotAfterSubmit": true,
+    "skipOnError": true,
+    "maxCompanies": 150
+  }
+}
+```
+
+---
+
+## 各フィールドの説明
+
+### spreadsheet
+
+Google Spreadsheet の接続情報と列構成を定義する。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `url` | string | 対象の Google Spreadsheet の URL。企業リストを管理するシート。 |
+| `columns` | object | 各列の役割を定義するオブジェクト。 |
+| `sheet` | string | 対象シート名。デフォルト: `"シート1"` |
+
+#### columns の詳細
+
+| フィールド | 型 | デフォルト | 説明 |
+|---|---|---|---|
+| `companyName` | string | `"A"` | 企業名の列 |
+| `submitted` | string | `"B"` | 送信済みフラグの列。チェックボックス形式で管理する。 |
+| `formUrl` | string | `"C"` | お問い合わせフォームの URL の列 |
+
+---
+
+### commonData
+
+全社共通の入力データ。キーはフォームのフィールドラベルとの**意味的マッチング**に使用される。
+
+任意のキー・値を追加可能。フィールドログで頻出するフィールドは自動でここに昇格提案される（count が 3 以上で候補）。
+
+#### マッチングロジックの詳細
+
+commonData のキーとフォームのフィールドラベルの対応は、**LLM（Claude 自身）が意味的に判断する**。単純な文字列の一致ではなく、ラベルの意味・文脈を理解したうえで最適なキーを選択する。
+
+**動作の原則:**
+
+- **意味的対応の認識**: 表記が異なっていても同じ意味を指すラベルは同一として扱う。例えば config に `"会社名"` があれば、フォーム上の「御社名」「貴社名」「Company Name」「企業名」はすべて対応すると判断する。
+- **セレクトボックスへの対応**: フィールドがセレクトボックスの場合、commonData の値に意味的に最も近い選択肢を選ぶ。例えば `"お問い合わせ種別": "資料請求"` に対して「資料のご請求」という選択肢があれば、それを選択する。
+- **テキストエリアへの対応**: テキストエリアには改行を含む長文もそのまま入力する。commonData の値に `\n` が含まれていれば、実際の改行として扱う。
+- **マッチしない場合**: 対応するキーが commonData に存在しないフィールドは、field-log.json に記録して後続の対応を促す。
+
+#### マッチング例
+
+| config のキー | マッチするフォームラベルの例 |
+|---|---|
+| `"会社名"` | 「御社名」「貴社名」「Company」「企業名」等 |
+| `"氏名"` | 「お名前」「Name」「ご担当者名」「担当者氏名」等 |
+| `"メールアドレス"` | 「E-mail」「email」「メール」「連絡先メール」等 |
+| `"電話番号"` | 「TEL」「お電話番号」「Phone」「連絡先電話番号」等 |
+| `"お問い合わせ内容"` | 「お問い合わせ詳細」「ご要望」「メッセージ」「備考」等 |
+
+---
+
+### options
+
+実行時の動作オプションを制御する。
+
+| フィールド | 型 | デフォルト | 説明 |
+|---|---|---|---|
+| `confirmBeforeSubmit` | boolean | `false` | 送信前に毎回確認するか |
+| `screenshotAfterSubmit` | boolean | `true` | 送信後にスクリーンショットを撮影するか |
+| `skipOnError` | boolean | `true` | エラー発生時にスキップして次の企業に進むか |
+| `maxCompanies` | number | `150` | 1 回の実行で処理する最大企業数 |
+
+---
+
+## フィールドログ（field-log.json）のスキーマ
+
+フォーム送信時に検出されたフィールド情報を蓄積するログファイル。
+パス: `~/.claude/form-submit/field-log.json`
+
+### 構造
+
+```json
+{
+  "entries": [
+    {
+      "fieldLabel": "(フォーム上のフィールドラベル)",
+      "category": "(意味カテゴリ: department, position, url 等)",
+      "value": "(ユーザーが入力した値)",
+      "count": 1,
+      "companies": ["(出現した企業名)"]
+    }
+  ]
+}
+```
+
+### 各フィールドの説明
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `fieldLabel` | string | フォーム上で検出されたフィールドのラベルテキスト |
+| `category` | string | LLM が判断した意味カテゴリ。同じ意味のフィールドをグループ化するために使用する（例: `department`, `position`, `url`）。 |
+| `value` | string | そのフィールドに入力する値 |
+| `count` | number | 出現回数。**3 以上で config への昇格候補**となる。 |
+| `companies` | string[] | 出現した企業名のリスト |
+
+### category フィールドのガイドライン
+
+category はフィールドの意味を表す識別子で、LLM がフォームのラベルから判断して付与する。同じ意味のフィールドを異なるフォームをまたいで集計するために使用するため、表記ゆれを吸収した統一的な値を設定する。
+
+| category 値 | 対象フィールドの例 |
+|---|---|
+| `department` | 部署名・所属部署・担当部署 |
+| `position` | 役職・職位・肩書き |
+| `inquiry_type` | お問い合わせ種別・お問い合わせカテゴリ・ご用件 |
+| `company_url` | 会社URL・企業サイト・ホームページURL |
+| `employee_count` | 従業員数・社員数・会社規模 |
+| `how_found` | 弊社を知ったきっかけ・本サービスを知ったルート・参照元 |
+| `other` | 上記いずれにも該当しない雑多なフィールド |
+
+---
+
+## 設定例
+
+### 最小構成（必須項目のみ）
+
+spreadsheet と commonData の最低限の項目だけを定義した例。options はすべてデフォルト値が適用される。
+
+```json
+{
+  "spreadsheet": {
+    "url": "https://docs.google.com/spreadsheets/d/XXXXXX/edit",
+    "columns": {
+      "companyName": "A",
+      "submitted": "B",
+      "formUrl": "C"
+    }
+  },
+  "commonData": {
+    "会社名": "株式会社サンプル",
+    "氏名": "山田 太郎",
+    "メールアドレス": "yamada@example.com",
+    "電話番号": "03-1234-5678",
+    "お問い合わせ内容": "サービスの詳細について資料をご送付いただけますでしょうか。"
+  }
+}
+```
+
+この構成では:
+- `sheet` が省略されているため `"シート1"` が使用される
+- `options` が省略されているため全てデフォルト値（`confirmBeforeSubmit: false`、`screenshotAfterSubmit: true`、`skipOnError: true`、`maxCompanies: 150`）が適用される
+
+---
+
+### フル構成（全オプション指定）
+
+全てのオプションを明示的に指定した例。commonData に追加情報を含め、セレクトボックス向けの値も設定している。
+
+```json
+{
+  "spreadsheet": {
+    "url": "https://docs.google.com/spreadsheets/d/XXXXXX/edit",
+    "columns": {
+      "companyName": "A",
+      "submitted": "B",
+      "formUrl": "C"
+    },
+    "sheet": "営業リスト2026"
+  },
+  "commonData": {
+    "会社名": "株式会社サンプル",
+    "氏名": "山田 太郎",
+    "フリガナ": "ヤマダ タロウ",
+    "メールアドレス": "yamada@example.com",
+    "電話番号": "03-1234-5678",
+    "部署名": "営業部",
+    "役職": "課長",
+    "お問い合わせ種別": "資料請求",
+    "お問い合わせ内容": "貴社サービスに興味があり、詳細資料をご送付いただきたく存じます。\n導入を検討しておりますので、ご連絡をお待ちしております。",
+    "会社URL": "https://sample.co.jp",
+    "従業員数": "101〜300名"
+  },
+  "options": {
+    "confirmBeforeSubmit": true,
+    "screenshotAfterSubmit": true,
+    "skipOnError": false,
+    "maxCompanies": 50
+  }
+}
+```
+
+この構成では:
+- `sheet` を明示指定しているため「営業リスト2026」シートを参照する
+- `お問い合わせ内容` に `\n` を含めており、テキストエリアに改行付きで入力される
+- `お問い合わせ種別` はセレクトボックス向けの値で、LLM がフォームの選択肢の中から最も近いものを選ぶ
+- `confirmBeforeSubmit: true` により毎回送信前に確認プロンプトが表示される
+- `skipOnError: false` によりエラー発生時に処理を中断する（デバッグ時に有効）
+- `maxCompanies: 50` により1回の実行で最大50社を処理する
