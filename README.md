@@ -33,62 +33,28 @@ SES企業向けお問い合わせフォーム自動送信スキル。Claude Code
 
 ## セットアップ
 
-### 1. リポジトリをクローン
+### クイックスタート（推奨）
 
 ```bash
 git clone https://github.com/your-username/FormPilot.git
+cd FormPilot
+bash setup.sh
 ```
 
-### 2. スキルとしてシンボリックリンクを作成
+`setup.sh` が以下を自動で行う（冪等・既存ファイルは上書きしない）：
 
-```bash
-ln -s /path/to/FormPilot ~/.claude/skills/form-submit
-```
+1. 前提条件チェック（`claude`, `npx`）
+2. スキルのシンボリックリンク作成（`~/.claude/skills/form-submit`）
+3. 設定ディレクトリ作成（`~/.claude/form-submit/screenshots/`）
+4. `config.json` テンプレート生成
+5. `field-log.json` 初期ファイル生成
+6. Playwright MCP 設定確認・案内
 
-### 3. 設定ディレクトリを作成
-
-```bash
-mkdir -p ~/.claude/form-submit/screenshots
-```
-
-### 4. config.json を作成
-
-`~/.claude/form-submit/config.json` を以下の内容で作成し、各値を入力する。
-
-```json
-{
-  "spreadsheet": {
-    "url": "https://docs.google.com/spreadsheets/d/XXXXXX/edit",
-    "columns": {
-      "companyName": "A",
-      "submitted": "B",
-      "formUrl": "C"
-    },
-    "sheet": "シート1"
-  },
-  "commonData": {
-    "会社名": "株式会社サンプル",
-    "氏名": "山田 太郎",
-    "フリガナ": "ヤマダ タロウ",
-    "メールアドレス": "yamada@example.com",
-    "電話番号": "03-1234-5678",
-    "お問い合わせ内容": "資料のご送付をお願いしたく存じます。"
-  },
-  "options": {
-    "confirmBeforeSubmit": false,
-    "screenshotAfterSubmit": true,
-    "skipOnError": true,
-    "maxCompanies": 150
-  }
-}
-```
+セットアップ完了後、`~/.claude/form-submit/config.json` を編集して自分の情報を入力する。
 
 スキーマの詳細と設定例は [`references/config-schema.example.md`](references/config-schema.example.md) を参照。
-実際に使用する際は、このファイルを `references/config-schema.md` にコピーして自分の情報に書き換えること。
 
-`field-log.json`、`docs/error-log.json`、`docs/error-rules.json` はファイルが存在しない場合にデフォルト値として自動的に扱われるため、事前作成は不要。
-
-### 5. Chrome を閉じてからスキルを実行
+### Chrome を閉じてからスキルを実行
 
 Playwright MCP は既存の Chrome プロファイルを再利用して reCAPTCHA の信頼スコアを確保している。Chrome と Playwright が同じプロファイルを同時使用できないため、**スキル実行前に Google Chrome を完全に閉じること**。
 
@@ -114,6 +80,7 @@ Playwright MCP は既存の Chrome プロファイルを再利用して reCAPTCH
 
 ```
 FormPilot/
+├── setup.sh                  # セットアップスクリプト（冪等）
 ├── SKILL.md                  # スキル定義（Claude Code が読み込む）
 ├── docs/
 │   ├── progress.json         # 前回の続きから再開するための進捗記録
