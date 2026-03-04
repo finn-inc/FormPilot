@@ -134,9 +134,18 @@ create_directories() {
   local form_submit_dir="${HOME}/.claude/form-submit"
   local company_dir="$(get_repo_root)/company"
 
+  mkdir -p "${form_submit_dir}"
   mkdir -p "${company_dir}"
   print_success "ディレクトリを作成しました（既存の場合はスキップ）: ${form_submit_dir}"
   print_success "ディレクトリを作成しました（既存の場合はスキップ）: ${company_dir}"
+
+  # 旧 progress.json の警告（新仕様では不使用）
+  local old_progress="${HOME}/.claude/form-submit/progress.json"
+  if [ -f "${old_progress}" ]; then
+    print_warn "旧形式の progress.json が見つかりました: ${old_progress}"
+    print_info "このファイルは現在の仕様では使用されません。不要であれば削除してください:"
+    print_info "  rm \"${old_progress}\""
+  fi
 }
 
 # -----------------------------------------------------------------------------
@@ -157,21 +166,37 @@ create_config_json() {
   cat > "${config_path}" <<'EOF'
 {
   "spreadsheet": {
-    "url": "<YOUR_GOOGLE_SPREADSHEET_URL>"
+    "url": "<YOUR_GOOGLE_SPREADSHEET_URL>",
+    "columns": {
+      "companyName": "A",
+      "submitted": "B",
+      "formUrl": "C"
+    },
+    "sheet": "シート1"
   },
   "commonData": {
     "会社名": "<YOUR_COMPANY_NAME>",
+    "会社フリガナ": "<YOUR_COMPANY_NAME_KANA>",
     "部署名": "",
     "役職": "",
     "氏名": "<YOUR_NAME>",
+    "姓": "<YOUR_LAST_NAME>",
+    "名": "<YOUR_FIRST_NAME>",
     "フリガナ（カタカナ）": "<YOUR_NAME_KANA_KATAKANA>",
     "フリガナ（ひらがな）": "<YOUR_NAME_KANA_HIRAGANA>",
     "メールアドレス": "<YOUR_EMAIL>",
+    "担当者メールアドレス": "<YOUR_EMAIL>",
     "電話番号": "<YOUR_PHONE>",
     "住所": "",
     "URL": "",
     "お問い合わせ種別": "SESパートナーのご提案",
     "お問い合わせ内容": "<YOUR_MESSAGE>"
+  },
+  "options": {
+    "confirmBeforeSubmit": true,
+    "screenshotAfterSubmit": true,
+    "skipOnError": true,
+    "maxCompanies": 150
   }
 }
 EOF
@@ -206,24 +231,34 @@ EOF
 
 # -----------------------------------------------------------------------------
 # check_playwright_mcp
-# ~/.claude.json の存在と playwright キーワードの有無を確認する
+# ~/.claude.json と ~/.claude/settings.json の playwright キーワードの有無を確認する
+# どちらかに設定があれば OK とする
 # Chrome プロファイルパスが存在する場合は情報を表示する
 # -----------------------------------------------------------------------------
 check_playwright_mcp() {
   print_step "6/7" "Playwright MCP 設定確認"
 
   local claude_json="${HOME}/.claude.json"
+  local claude_settings="${HOME}/.claude/settings.json"
+  local found=false
 
-  if [ ! -f "${claude_json}" ]; then
-    print_warn "~/.claude.json が見つかりません。"
-    _print_playwright_setup_guide
-  else
-    if grep -q "playwright" "${claude_json}" 2>/dev/null; then
-      print_success "Playwright MCP が設定されています: ${claude_json}"
+  if [ -f "${claude_json}" ] && grep -q "playwright" "${claude_json}" 2>/dev/null; then
+    print_success "Playwright MCP が設定されています: ${claude_json}"
+    found=true
+  fi
+
+  if [ -f "${claude_settings}" ] && grep -q "playwright" "${claude_settings}" 2>/dev/null; then
+    print_success "Playwright MCP が設定されています: ${claude_settings}"
+    found=true
+  fi
+
+  if [ "${found}" = false ]; then
+    if [ ! -f "${claude_json}" ] && [ ! -f "${claude_settings}" ]; then
+      print_warn "~/.claude.json も ~/.claude/settings.json も見つかりません。"
     else
-      print_warn "Playwright MCP が ~/.claude.json に設定されていません。"
-      _print_playwright_setup_guide
+      print_warn "Playwright MCP が ~/.claude.json / ~/.claude/settings.json に設定されていません。"
     fi
+    _print_playwright_setup_guide
   fi
 
   # Chrome プロファイルパスの確認（macOS / Linux）
@@ -246,11 +281,26 @@ _print_playwright_setup_guide() {
   print_info ""
   print_info "Playwright MCP が未設定です。以下を ~/.claude.json に追加してください:"
   print_info ""
+  print_info "【推奨構成】Chrome プロファイル付き（既存のログイン状態を利用）:"
   print_info '  {'
   print_info '    "mcpServers": {'
   print_info '      "playwright": {'
   print_info '        "command": "npx",'
-  print_info '        "args": ["@anthropic-ai/mcp-playwright@latest"]'
+  print_info '        "args": ['
+  print_info '          "@playwright/mcp@latest",'
+  print_info '          "--user-data-dir",'
+  print_info '          "'"${HOME}/Library/Application Support/Google/Chrome"'"'
+  print_info '        ]'
+  print_info '      }'
+  print_info '    }'
+  print_info '  }'
+  print_info ""
+  print_info "【最小構成】Chrome プロファイルなし:"
+  print_info '  {'
+  print_info '    "mcpServers": {'
+  print_info '      "playwright": {'
+  print_info '        "command": "npx",'
+  print_info '        "args": ["@playwright/mcp@latest"]'
   print_info '      }'
   print_info '    }'
   print_info '  }'
@@ -296,7 +346,8 @@ print_completion() {
   company/                        企業別の送信データ（プロジェクトルート）
 
 【詳細】
-  references/config-schema.example.md       設定スキーマの詳細
+  references/config-schema.md              設定スキーマ
+  references/config-schema.example.md      設定例
   README.md                                 プロジェクト説明
 USAGE
 }
