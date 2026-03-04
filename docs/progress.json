@@ -1,0 +1,10 @@
+{
+  "lastRow": 1004,
+  "lastCompany": "イプソス株式会社",
+  "updatedAt": "2026-03-04T14:57:00+09:00",
+  "results": [
+    { "row": 1002, "company": "株式会社アクティブギア", "status": "success", "retries": 0 },
+    { "row": 1003, "company": "株式会社ＬＵＰＩＮＵＳ", "status": "failed", "retries": 0, "error": "CAPTCHA検出" },
+    { "row": 1004, "company": "イプソス株式会社", "status": "failed", "retries": 0, "error": "CAPTCHA検出" }
+  ]
+}
