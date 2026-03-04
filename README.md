@@ -78,13 +78,18 @@ mkdir -p ~/.claude/form-submit
 }
 ```
 
-スキーマの詳細と設定例は [`references/config-schema.md`](references/config-schema.md) を参照。
+スキーマの詳細と設定例は [`references/config-schema.example.md`](references/config-schema.example.md) を参照。
+実際に使用する際は、このファイルを `references/config-schema.md` にコピーして自分の情報に書き換えること。
 
 ### 5. field-log.json を作成
 
 ```bash
 echo '{"entries": []}' > ~/.claude/form-submit/field-log.json
 ```
+
+### 6. Chrome を閉じてからスキルを実行
+
+Playwright MCP は既存の Chrome プロファイルを再利用して reCAPTCHA の信頼スコアを確保しています。Chrome と Playwright が同じプロファイルを同時使用できないため、**スキル実行前に Google Chrome を完全に閉じてください**。
 
 ---
 
