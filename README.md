@@ -63,16 +63,10 @@ Playwright MCP は既存の Chrome プロファイルを再利用して reCAPTCH
 ## 使い方
 
 ```
-/form-submit
+/form-submit                       未送信企業を maxCompanies 件まで連続処理
+/form-submit --max 30              最大30社まで処理（config の maxCompanies を上書き）
+/form-submit --company <企業名>     指定した企業のみ処理
 ```
-
-未送信企業をスプレッドシートから取得し、`maxCompanies` 件まで連続処理する。
-
-```
-/form-submit --company <企業名>
-```
-
-指定した企業のフォームのみを処理する。
 
 ---
 
