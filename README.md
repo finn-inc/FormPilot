@@ -130,8 +130,9 @@ FormPilot/
 ├── config.json               # スプレッドシートURL・commonData・オプション
 ├── field-log.json            # 未知フィールドの回答ログ（自動作成）
 └── screenshots/              # 送信前後のスクリーンショット保存先
-    ├── {企業名}_before.png
-    └── {企業名}_after.png
+    └── {企業名}/
+        ├── before.png
+        └── after.png
 ```
 
 ---
