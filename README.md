@@ -39,12 +39,12 @@ bash setup.sh
 
 1. 前提条件チェック（`claude`, `npx`）
 2. スキルのシンボリックリンク作成（`~/.claude/skills/form-submit`）
-3. 設定ディレクトリ作成（`~/.claude/form-submit/screenshots/`）
+3. 設定・企業データディレクトリ作成（`company/`）
 4. `config.json` テンプレート生成
 5. `field-log.json` 初期ファイル生成
 6. Playwright MCP 設定確認・案内
 
-セットアップ完了後、`~/.claude/form-submit/config.json` を編集して自分の情報を入力する。
+セットアップ完了後、`~/.claude/form-submit/config.json` を編集して自分の情報を入力する。送信データは `company/`（プロジェクトルート）に企業別で保存される。
 
 スキーマの詳細と設定例は [`references/config-schema.example.md`](references/config-schema.example.md) を参照。
 
@@ -75,7 +75,8 @@ FormPilot/
 │   ├── error-log.json        # セッション横断の失敗履歴
 │   └── error-rules.json      # 3回以上失敗した企業の自動スキップルール
 └── references/
-    └── config-schema.md      # 設定ファイルのスキーマリファレンス
+    ├── config-schema.md      # 設定ファイルのスキーマリファレンス
+    └── config-schema.example.md  # 設定例
 ```
 
 実行時に使用する設定ファイルは `~/.claude/form-submit/` に配置する（リポジトリ外）。
@@ -83,11 +84,12 @@ FormPilot/
 ```
 ~/.claude/form-submit/
 ├── config.json               # スプレッドシートURL・commonData・オプション
-├── field-log.json            # 未知フィールドの回答ログ（自動作成）
-└── screenshots/              # 送信前後のスクリーンショット保存先
-    └── {企業名}/
-        ├── before.png
-        └── after.png
+└── field-log.json            # 未知フィールドの回答ログ（自動作成）
+
+company/                        # 企業別の送信データ（プロジェクトルート、git管理外）
+└── {企業名}/
+    ├── before.json           # 送信前の入力内容（JSON）
+    └── after.png             # 送信後のスクリーンショット
 ```
 
 ---

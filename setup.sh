@@ -126,15 +126,17 @@ create_skill_symlink() {
 
 # -----------------------------------------------------------------------------
 # create_directories
-# ~/.claude/form-submit/screenshots/ を作成する
+# ~/.claude/form-submit/ とプロジェクトルートの company/ を作成する
 # -----------------------------------------------------------------------------
 create_directories() {
-  print_step "3/7" "設定ディレクトリ作成"
+  print_step "3/7" "設定・企業データディレクトリ作成"
 
-  local screenshots_dir="${HOME}/.claude/form-submit/screenshots"
+  local form_submit_dir="${HOME}/.claude/form-submit"
+  local company_dir="$(get_repo_root)/company"
 
-  mkdir -p "${screenshots_dir}"
-  print_success "ディレクトリを作成しました（既存の場合はスキップ）: ${screenshots_dir}"
+  mkdir -p "${company_dir}"
+  print_success "ディレクトリを作成しました（既存の場合はスキップ）: ${form_submit_dir}"
+  print_success "ディレクトリを作成しました（既存の場合はスキップ）: ${company_dir}"
 }
 
 # -----------------------------------------------------------------------------
@@ -159,10 +161,16 @@ create_config_json() {
   },
   "commonData": {
     "会社名": "<YOUR_COMPANY_NAME>",
+    "部署名": "",
+    "役職": "",
     "氏名": "<YOUR_NAME>",
-    "フリガナ": "<YOUR_NAME_KANA>",
+    "フリガナ（カタカナ）": "<YOUR_NAME_KANA_KATAKANA>",
+    "フリガナ（ひらがな）": "<YOUR_NAME_KANA_HIRAGANA>",
     "メールアドレス": "<YOUR_EMAIL>",
     "電話番号": "<YOUR_PHONE>",
+    "住所": "",
+    "URL": "",
+    "お問い合わせ種別": "SESパートナーのご提案",
     "お問い合わせ内容": "<YOUR_MESSAGE>"
   }
 }
@@ -279,12 +287,13 @@ print_completion() {
 
 【使い方】
   /form-submit                       未送信企業を一括処理（最大150社）
+  /form-submit --max 30              最大30社まで処理
   /form-submit --company 企業名      特定企業のみ処理
 
 【設定ファイル】
   ~/.claude/form-submit/config.json         送信データ設定
   ~/.claude/form-submit/field-log.json      未知フィールド学習データ
-  ~/.claude/form-submit/screenshots/        送信前後のスクリーンショット
+  company/                        企業別の送信データ（プロジェクトルート）
 
 【詳細】
   references/config-schema.example.md       設定スキーマの詳細
