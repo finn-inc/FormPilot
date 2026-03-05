@@ -1,9 +1,9 @@
 {
-  "lastRow": 1015,
-  "lastCompany": "MTCジャパン",
-  "updatedAt": "2026-03-05T00:53:00+09:00",
+  "lastRow": 1017,
+  "lastCompany": "株式会社ゼネット",
+  "updatedAt": "2026-03-05T23:22:00+09:00",
   "results": [
-    { "row": 1014, "company": "ユークリエイション株式会社", "status": "failed", "retries": 0, "error": "ドメイン期限切れ（you-c.com has expired）" },
-    { "row": 1015, "company": "MTCジャパン", "status": "success", "retries": 0 }
+    { "row": 1016, "company": "株式会社C3アドバンステクノロジー", "status": "failed", "retries": 3, "error": "送信エラー: メッセージの送信に失敗しました（Contact Form 7 サーバーエラー）" },
+    { "row": 1017, "company": "株式会社ゼネット", "status": "success", "retries": 0 }
   ]
 }

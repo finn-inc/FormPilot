@@ -37,7 +37,7 @@
     "confirmBeforeSubmit": false,
     "screenshotAfterSubmit": true,
     "skipOnError": true,
-    "maxCompanies": 150
+    "maxCompanies": 30
   }
 }
 ```
@@ -107,7 +107,7 @@ commonData のキーとフォームのフィールドラベルの対応は、**L
 | `confirmBeforeSubmit` | boolean | `false` | 送信前に毎回確認するか |
 | `screenshotAfterSubmit` | boolean | `true` | 送信後にスクリーンショットを撮影するか |
 | `skipOnError` | boolean | `true` | エラー発生時にスキップして次の企業に進むか |
-| `maxCompanies` | number | `150` | 1 回の実行で処理する最大企業数 |
+| `maxCompanies` | number | `30` | 1 回の実行で処理する最大企業数 |
 
 ---
 

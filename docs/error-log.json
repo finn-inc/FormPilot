@@ -1,3 +1,11 @@
 {
-  "entries": []
+  "entries": [
+    {
+      "company": "株式会社C3アドバンステクノロジー",
+      "url": "https://www.c3at.co.jp/contact/",
+      "error": "送信エラー: メッセージの送信に失敗しました（Contact Form 7 サーバーエラー）",
+      "count": 1,
+      "lastSeen": "2026-03-05T23:15:00+09:00"
+    }
+  ]
 }
