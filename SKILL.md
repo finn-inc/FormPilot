@@ -170,7 +170,10 @@ commonData のキーとフォームのフィールドラベルを **意味的に
 1. 送信ボタン（「送信」「Submit」「確認する」「次へ」等）を `browser_click`
 2. `browser_run_code` でページ状態を確認（完了: `送信完了|ありがとう|complete|thanks`、確認画面: `確認|confirm`）
 3. **確認画面** → 「送信する」「上記内容で送信」等をクリックし再確認（最大 3 回）
-4. **完了画面** → `screenshotAfterSubmit` が `true` なら `browser_take_screenshot`（保存先: `company/{企業名}/after.png`）→ 成功として記録
+4. **完了画面** → `screenshotAfterSubmit` が `true` なら以下のルールで `browser_take_screenshot`（保存先: `{企業名}/after.png`）→ 成功として記録
+   - **通常フォーム（完了ページに遷移する場合）**: 完了メッセージが見える位置までスクロールしてからスクリーンショット
+   - **iframe内フォーム（Microsoft Forms等）**: iframe要素を `ref` 指定してスクリーンショット（親ページではなくiframe内の完了メッセージを撮る）
+   - **サイレントリセット型（Wixフォーム等、送信後にフォームがリセットされる場合）**: 送信クリック**前**に入力済みフォームのスクリーンショットを `{企業名}/before.png` として保存。送信成功はネットワークレスポンス（status 200）で確認し、after.png は撮らない
 5. 完了と判断できない → Step 12 へ
 
 ### Step 12: リトライ＆エラー処理

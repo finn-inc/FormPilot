@@ -1,9 +1,8 @@
 {
-  "lastRow": 1017,
-  "lastCompany": "株式会社ゼネット",
-  "updatedAt": "2026-03-05T23:22:00+09:00",
+  "lastRow": 1021,
+  "lastCompany": "コンピューターシステム株式会社",
+  "updatedAt": "2026-03-06T01:12:00+09:00",
   "results": [
-    { "row": 1016, "company": "株式会社C3アドバンステクノロジー", "status": "failed", "retries": 3, "error": "送信エラー: メッセージの送信に失敗しました（Contact Form 7 サーバーエラー）" },
-    { "row": 1017, "company": "株式会社ゼネット", "status": "success", "retries": 0 }
+    { "row": 1021, "company": "コンピューターシステム株式会社", "status": "success", "retries": 0 }
   ]
 }
